@@ -1,162 +1,91 @@
 package com.example.xmpptest;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Collection;
-
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.ChatManager;
-import org.jivesoftware.smack.ChatManagerListener;
-import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.MessageListener;
-import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.RosterEntry;
-import org.jivesoftware.smack.RosterGroup;
-import org.jivesoftware.smack.RosterListener;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Presence;
-
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import com.example.chat.OfflineChatInfoManager;
+import com.example.chat.UserChatListener;
+import com.example.chat.XMPPChat;
+import com.lidroid.xutils.ViewUtils;
+import com.lidroid.xutils.view.annotation.ViewInject;
+import com.lidroid.xutils.view.annotation.event.OnClick;
+
+/**
+ * 欢迎来到xmpp的测试demo，这个是主注册，登录类
+ * 
+ * @author lixiaosong
+ * 
+ */
 public class MainActivity extends Activity {
-	// 下面的IP地址是自己机器上的IP地址
-	private final ConnectionConfiguration config = new ConnectionConfiguration(
-			"192.168.0.101", 5222, "");
+	/**
+	 * 注册或登录的用户名
+	 */
+	@ViewInject(R.id.username)
+	private EditText m_userName;
+	/**
+	 * 注册或登录的密码
+	 */
+	@ViewInject(R.id.password)
+	private EditText m_password;
+	/**
+	 * 点击进入下一个界面的按钮
+	 */
+	@ViewInject(R.id.button)
+	private Button m_registerOrLogin;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		login();
-
+		ViewUtils.inject(this);
 	}
 
-	private void login() {
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				Log.v("thread start", "ok");
-				config.setSASLAuthenticationEnabled(false);
-				config.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
-				XMPPConnection.DEBUG_ENABLED = true;
-				XMPPConnection connection = new XMPPConnection(config);
-				try {
-					connection.connect();
-					connection.login("test", "test");// 登陆
-
-					// 这之前的代码是关于登陆的内容，此时如果成功的话就说明已经登陆到服务器了
-					// 下面是即时聊天相关的内容
-					System.out.println(connection.getUser());
-					ChatManager chatmanager = connection.getChatManager();
-					Chat newChat = chatmanager.createChat("test3@tcideapad",
-							new MessageListener() {
-								@Override
-								public void processMessage(Chat arg0,
-										Message arg1) {
-									Log.v("test",
-											"Received from 【" + arg1.getFrom()
-													+ "】 message: "
-													+ arg1.getBody());
-								}
-							});
-					chatmanager.addChatListener(new ChatManagerListener() {
-
-						@Override
-						public void chatCreated(Chat arg0, boolean arg1) {
-							arg0.addMessageListener(new MessageListener() {
-
-								@Override
-								public void processMessage(Chat arg0,
-										Message arg1) {
-									Log.v("test",
-											"Received from 【" + arg1.getFrom()
-													+ "】 message: "
-													+ arg1.getBody());
-
-								}
-							});
-						}
-					});
-					newChat.sendMessage("个人的一小步，世界的一大步");
-
-					Roster roster = connection.getRoster();
-					Collection<RosterEntry> entries = roster.getEntries();
-					for (RosterEntry entry : entries) {
-						System.out.print(entry.getName() + " - "
-								+ entry.getUser() + " - " + entry.getType()
-								+ " - " + entry.getGroups().size());
-						Presence presence = roster.getPresence(entry.getUser());
-						System.out.println(" - " + presence.getStatus() + " - "
-								+ presence.getFrom());
-					}
-
-					// 添加花名册监听器，监听好友状态的改变。
-					roster.addRosterListener(new RosterListener() {
-
-						@Override
-						public void entriesAdded(Collection<String> addresses) {
-							System.out.println("entriesAdded");
-						}
-
-						@Override
-						public void entriesUpdated(Collection<String> addresses) {
-							System.out.println("entriesUpdated");
-						}
-
-						@Override
-						public void entriesDeleted(Collection<String> addresses) {
-							System.out.println("entriesDeleted");
-						}
-
-						@Override
-						public void presenceChanged(Presence presence) {
-							System.out.println("presenceChanged - >"
-									+ presence.getStatus());
-						}
-
-					});
-					for (RosterGroup g : roster.getGroups()) {
-						for (RosterEntry entry : g.getEntries()) {
-							System.out.println("Group " + g.getName() + " >> "
-									+ entry.getName() + " - " + entry.getUser()
-									+ " - " + entry.getType() + " - "
-									+ entry.getGroups().size());
-						}
-					}
-
-					// 发送消息
-					BufferedReader cmdIn = new BufferedReader(
-							new InputStreamReader(System.in));
-					while (true) {
-						try {
-							String cmd = cmdIn.readLine();
-							if ("!q".equalsIgnoreCase(cmd)) {
-								break;
-							}
-							newChat.sendMessage(cmd);
-						} catch (Exception ex) {
-						}
-					}
-					connection.disconnect();
-					System.exit(0);
-				} catch (XMPPException e) {
-					e.printStackTrace();
+	@OnClick(R.id.button)
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.button:
+			final ProgressDialog dlg = new ProgressDialog(this);
+			dlg.show();
+			String userName = m_userName.getText().toString();
+			String password = m_password.getText().toString();
+			String result = XMPPChat.getInstance().register(userName, password,
+					userName + ((int) (Math.random() * 115 + 1)));
+			if (result.equals("0")) {
+				Toast.makeText(this, "服务器出现问题，请重新尝试", Toast.LENGTH_SHORT)
+						.show();
+			} else if (result.equals("1") || result.equals("2")) {
+				// 这里说明注册成功或者已经有该账号，直接登录
+				boolean loginResult = XMPPChat.getInstance().login(userName,
+						password);
+				if (loginResult) {
+					// 得到离线消息
+					OfflineChatInfoManager.getOfflineInfo();
+					// 将账号设置为在线状态
+					XMPPChat.getInstance().setPresence(XMPPChat.ONLINE);
+					// 添加接收消息的监听器
+					XMPPChat.getInstance().getConnection().getChatManager()
+							.addChatListener(new UserChatListener());
+					// 添加接收文件的监听器
+					XMPPChat.getInstance().receiveFile(XMPPTestApp.getSelf());
+					// 开启心跳服务
+					XMPPChat.getInstance().startHeartService(
+							XMPPTestApp.getSelf());
+					// 跳转到我能做什么的页面
+					startActivity(new Intent(this, WhatShouldIDo.class));
+				} else {
+					Toast.makeText(this, "登陆失败，请重新尝试", Toast.LENGTH_SHORT)
+							.show();
 				}
-
+			} else if (result.equals("3")) {
+				Toast.makeText(this, "注册失败，请重新尝试", Toast.LENGTH_SHORT).show();
 			}
-		}).start();
+			break;
+		}
 	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
 }
