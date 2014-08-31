@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name="com.example.xmpptest.XMPPTestApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -27,6 +28,18 @@
         <activity
             android:name="com.example.xmpptest.WhatShouldIDo"
             android:label="@string/title_activity_what_should_ido" >
+        </activity>
+        <activity
+            android:name="com.example.xmpptest.SingleChatActivity"
+            android:label="@string/title_activity_single_chat" >
+        </activity>
+        <activity
+            android:name="com.example.xmpptest.MultiChatActivity"
+            android:label="@string/title_activity_multi_chat" >
+        </activity>
+        <activity
+            android:name="com.example.xmpptest.FileTransferDemo"
+            android:label="@string/title_activity_file_transfer_demo" >
         </activity>
     </application>
 

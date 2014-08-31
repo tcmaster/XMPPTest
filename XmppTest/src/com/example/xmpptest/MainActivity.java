@@ -1,8 +1,11 @@
 package com.example.xmpptest;
 
+import org.jivesoftware.smack.XMPPConnection;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -50,15 +53,51 @@ public class MainActivity extends Activity {
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.button:
-			final ProgressDialog dlg = new ProgressDialog(this);
-			dlg.show();
 			String userName = m_userName.getText().toString();
 			String password = m_password.getText().toString();
+			if ((userName != null && !userName.equals(""))
+					&& (password != null && !password.equals(""))) {
+				// 当有用户名和密码时，开启异步任务，连接服务器进行注册/登陆的操作
+				new LoginTask(userName, password).execute();
+			} else {
+				Toast.makeText(MainActivity.this, "请输入用户名/密码",
+						Toast.LENGTH_SHORT).show();
+			}
+			break;
+		}
+	}
+
+	private class LoginTask extends AsyncTask<Void, Void, Void> {
+		private ProgressDialog dlg;
+		private String userName;
+		private String password;
+
+		public LoginTask(String userName, String password) {
+			dlg = new ProgressDialog(MainActivity.this);
+			this.userName = userName;
+			this.password = password;
+		}
+
+		@Override
+		protected void onPreExecute() {
+			dlg.show();
+			super.onPreExecute();
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			XMPPChat.getInstance();
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void p) {
+			dlg.dismiss();
 			String result = XMPPChat.getInstance().register(userName, password,
 					userName + ((int) (Math.random() * 115 + 1)));
 			if (result.equals("0")) {
-				Toast.makeText(this, "服务器出现问题，请重新尝试", Toast.LENGTH_SHORT)
-						.show();
+				Toast.makeText(MainActivity.this, "服务器出现问题，请重新尝试",
+						Toast.LENGTH_SHORT).show();
 			} else if (result.equals("1") || result.equals("2")) {
 				// 这里说明注册成功或者已经有该账号，直接登录
 				boolean loginResult = XMPPChat.getInstance().login(userName,
@@ -77,15 +116,27 @@ public class MainActivity extends Activity {
 					XMPPChat.getInstance().startHeartService(
 							XMPPTestApp.getSelf());
 					// 跳转到我能做什么的页面
-					startActivity(new Intent(this, WhatShouldIDo.class));
+					startActivity(new Intent(MainActivity.this,
+							WhatShouldIDo.class));
 				} else {
-					Toast.makeText(this, "登陆失败，请重新尝试", Toast.LENGTH_SHORT)
-							.show();
+					Toast.makeText(MainActivity.this, "登陆失败，请重新尝试",
+							Toast.LENGTH_SHORT).show();
 				}
 			} else if (result.equals("3")) {
-				Toast.makeText(this, "注册失败，请重新尝试", Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, "注册失败，请重新尝试",
+						Toast.LENGTH_SHORT).show();
 			}
-			break;
 		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		// 关闭聊天的服务
+		XMPPConnection connection = XMPPChat.getInstance().getConnection();
+		if (connection != null) {
+			connection.disconnect();
+			XMPPChat.getInstance().stopHeartService(this);
+		}
+		super.onDestroy();
 	}
 }

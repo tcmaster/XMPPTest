@@ -125,9 +125,15 @@ public class MultiChat {
 								+ "@conference."
 								+ XMPPChat.getInstance().getConnection()
 										.getServiceName());
+				Form form = muc.getConfigurationForm();
+				Form submitForm = form.createAnswerForm();
+				// 设置聊天室是持久聊天室，即将要被保存下来
+				submitForm.setAnswer("muc#roomconfig_persistentroom", true);
+				// 发送已完成的表单（有默认值）到服务器来配置聊天室
+				muc.sendConfigurationForm(submitForm);
 				muc.addMessageListener(new MultiChatListener(key));
 				chatMap.put(roomsName, muc);
-				// 聊天室服务将会决定要接受的历史记录数量，暂定为20条
+				// 聊天室服务将会决定要接受的历史记录数量
 				DiscussionHistory history = new DiscussionHistory();
 				history.setMaxChars(60);
 				// history.setSince(new Date());

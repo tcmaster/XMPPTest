@@ -1,0 +1,39 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SingleChatActivity"
+    android:orientation="vertical" >
+	
+    <EditText 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/talkToWho_et"
+        android:inputType="text"
+        android:textColor="@android:color/darker_gray"
+        android:hint="请输入要聊天的对象"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/whatToTalk_et"
+        android:inputType="text"
+        android:textColor="@android:color/black"
+        android:hint="请输入聊天内容"
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/send_btn"
+        android:text="发送"
+        android:textSize="18sp"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        android:id="@+id/content_tv"
+        android:textSize="16sp"
+        android:layout_marginTop="10dp"
+        />
+
+</LinearLayout>
