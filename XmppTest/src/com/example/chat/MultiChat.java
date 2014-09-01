@@ -17,6 +17,11 @@ import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.packet.DelayInformation;
 
+import android.content.Intent;
+
+import com.example.xmpptest.MultiChatActivity;
+import com.example.xmpptest.XMPPTestApp;
+
 /**
  * 多人会话类，负责创建，加入，保持多人会话
  * 
@@ -51,7 +56,7 @@ public class MultiChat {
 			String password) {
 		MultiUserChat muc = null;
 		try {
-			muc.create(roomName);
+
 			muc = new MultiUserChat(XMPPChat.getInstance().getConnection(),
 					roomName
 							+ "@conference."
@@ -120,17 +125,19 @@ public class MultiChat {
 		try {
 			muc = chatMap.get(roomsName);
 			if (muc == null) {
+				// muc.create(roomsName);
 				muc = new MultiUserChat(XMPPChat.getInstance().getConnection(),
 						roomsName
 								+ "@conference."
 								+ XMPPChat.getInstance().getConnection()
 										.getServiceName());
-				Form form = muc.getConfigurationForm();
-				Form submitForm = form.createAnswerForm();
-				// 设置聊天室是持久聊天室，即将要被保存下来
-				submitForm.setAnswer("muc#roomconfig_persistentroom", true);
-				// 发送已完成的表单（有默认值）到服务器来配置聊天室
-				muc.sendConfigurationForm(submitForm);
+				// Form form = muc.getConfigurationForm();
+				// Form submitForm = form.createAnswerForm();
+				// // 设置聊天室是持久聊天室，即将要被保存下来
+				// submitForm.setAnswer("muc#roomconfig_persistentroom", true);
+				// // 发送已完成的表单（有默认值）到服务器来配置聊天室
+				// muc.sendConfigurationForm(submitForm);
+				// 添加相关监听器
 				muc.addMessageListener(new MultiChatListener(key));
 				chatMap.put(roomsName, muc);
 				// 聊天室服务将会决定要接受的历史记录数量
@@ -165,6 +172,17 @@ public class MultiChat {
 			Message message = (Message) arg0;
 			DelayInformation delay = (DelayInformation) message.getExtension(
 					"x", "jabber:x:delay");
+			String time = "";
+			if (delay != null)
+				time = delay.getStamp().toLocaleString();
+			XMPPTestApp
+					.getSelf()
+					.getMultiInfo(key)
+					.append(message.getFrom().split("/")[1].split("@")[0]
+							+ " : " + message.getBody() + time + "\n");
+			Intent intent = new Intent(MultiChatActivity.MULTI_CHAT_ACTION);
+			intent.putExtra("room", key);
+			XMPPTestApp.getSelf().sendBroadcast(intent);
 		}
 	}
 }

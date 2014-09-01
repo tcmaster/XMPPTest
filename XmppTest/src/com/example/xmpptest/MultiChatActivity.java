@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.chat.MultiChat;
 import com.example.chat.XMPPChat;
@@ -59,9 +60,9 @@ public class MultiChatActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			// 当收到消息以后，更新消息即可
-			content_tv.setText(XMPPTestApp.getSelf().getSingleInfo(
-					intent.getStringExtra("user")));
-			talkToWho_et.setText(intent.getStringExtra("user"));
+			content_tv.setText(XMPPTestApp.getSelf()
+					.getMultiInfo(intent.getStringExtra("room")).toString());
+			talkToWho_et.setText(intent.getStringExtra("room"));
 		}
 	}
 
@@ -85,11 +86,12 @@ public class MultiChatActivity extends Activity {
 							talkToWho_et.getText().toString());
 			try {
 				chat.sendMessage(whatToTalk_et.getText().toString());
+				content_tv.setText("");
 			} catch (XMPPException e) {
 				e.printStackTrace();
 			}
 		} else {
-
+			Toast.makeText(this, "房间号/内容不能为空", Toast.LENGTH_SHORT).show();
 		}
 	}
 
