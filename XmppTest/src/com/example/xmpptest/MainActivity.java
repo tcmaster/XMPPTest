@@ -1,7 +1,5 @@
 package com.example.xmpptest;
 
-import org.jivesoftware.smack.XMPPConnection;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -94,7 +92,7 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(Void p) {
 			dlg.dismiss();
 			String result = XMPPChat.getInstance().register(userName, password,
-					userName + ((int) (Math.random() * 115 + 1)));
+					userName);
 			if (result.equals("0")) {
 				Toast.makeText(MainActivity.this, "服务器出现问题，请重新尝试",
 						Toast.LENGTH_SHORT).show();
@@ -131,12 +129,8 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		// 关闭聊天的服务
-		XMPPConnection connection = XMPPChat.getInstance().getConnection();
-		if (connection != null) {
-			connection.disconnect();
-			XMPPChat.getInstance().stopHeartService(this);
-		}
+		// 关闭聊天相关内容
+		XMPPChat.stopEveryThing();
 		super.onDestroy();
 	}
 }

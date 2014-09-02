@@ -7,10 +7,14 @@ import org.jivesoftware.smackx.filetransfer.FileTransfer.Status;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -63,11 +67,21 @@ public class FileTransferDemo extends Activity {
 	 */
 	@ViewInject(R.id.trans_btn)
 	Button trans_btn;
+	/**
+	 * 接收文件的广播接收器
+	 */
+	private MyReceiver receiver;
+	/**
+	 * 本类广播接收器的action
+	 */
+	public static final String TRANSFERFILE = "transfer";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_file_transfer_demo);
+		receiver = new MyReceiver();
+		registerReceiver(receiver, new IntentFilter(TRANSFERFILE));
 		ViewUtils.inject(this);
 	}
 
@@ -183,13 +197,15 @@ public class FileTransferDemo extends Activity {
 										FileTransferDemo.this);
 								LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
 										150, 150);
+								Bitmap bm = ThumbnailUtils.extractThumbnail(
+										BitmapFactory.decodeFile(filePath),
+										150, 150);
 								lp.gravity = Gravity.CENTER_HORIZONTAL;
 								lp.bottomMargin = 20;
 								lp.topMargin = 20;
 								iv.setScaleType(ScaleType.FIT_XY);
 								iv.setLayoutParams(lp);
-								iv.setImageBitmap(BitmapFactory
-										.decodeFile(filePath));
+								iv.setImageBitmap(bm);
 								trans_ll.addView(iv);
 							} else if (result == Status.error) {
 								Utils.toast(FileTransferDemo.this, "传输出现异常");
@@ -206,5 +222,32 @@ public class FileTransferDemo extends Activity {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private class MyReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String filePath = intent.getStringExtra("localurl");
+			ImageView iv = new ImageView(FileTransferDemo.this);
+			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(150,
+					150);
+			Bitmap bm = ThumbnailUtils.extractThumbnail(
+					BitmapFactory.decodeFile(filePath), 150, 150);
+			lp.gravity = Gravity.CENTER_HORIZONTAL;
+			lp.bottomMargin = 20;
+			lp.topMargin = 20;
+			iv.setScaleType(ScaleType.FIT_XY);
+			iv.setLayoutParams(lp);
+			iv.setImageBitmap(bm);
+			trans_ll.addView(iv);
+		}
+
+	}
+
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver(receiver);
+		super.onDestroy();
 	}
 }

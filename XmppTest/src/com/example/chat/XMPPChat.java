@@ -62,6 +62,9 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 
+import com.example.xmpptest.FileTransferDemo;
+import com.example.xmpptest.XMPPTestApp;
+
 /**
  * XMPP的工具类，定义了聊天所需的各种方法
  * 
@@ -92,7 +95,7 @@ public class XMPPChat {
 	/**
 	 * 心跳服务，开启的话不断发送心跳包，需及时关闭
 	 */
-	private HeartService service;
+	private static HeartService service;
 	/**
 	 * 文件接收与发送的管理器
 	 */
@@ -156,43 +159,45 @@ public class XMPPChat {
 		return connection;
 	}
 
+	public void closeConnection(Context context) {
+		if (connection != null) {
+			connection.disconnect();
+			connection = null;
+			chatService = null;
+		}
+	}
+
+	public static void stopEveryThing() {
+		if (chatService != null) {
+			chatService.stopHeartService(XMPPTestApp.getSelf());
+		}
+	}
+
 	private boolean openConnection() {
-		if (null == connection || !connection.isAuthenticated()) {
+		if (null == connection || !connection.isAuthenticated()) {// 查看当前是否有链接存在
 			try {
 				ConnectionConfiguration config = new ConnectionConfiguration(
 						REMOTE_HOST, PORT);
 				XMPPConnection.DEBUG_ENABLED = true;
 				config.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
 				config.setSendPresence(false); // 状态设为离线，目的为了取离线消息
-				config.setReconnectionAllowed(true);
+				config.setReconnectionAllowed(false);
 				config.setDebuggerEnabled(true);
 				Log.v("lixiaosong", config.getServiceName());
 				Log.v("lixiaosong", config.getHostAddresses().toString());
 				connection = new XMPPConnection(config);
 				connection.connect();
 				configureConnection(ProviderManager.getInstance());
-				flag2 = 1;
+				// flag2 = 1;
 				return true;
 			} catch (XMPPException e) {
 				e.printStackTrace();
-				flag2 = 2;
+				// flag2 = 2;
 			}
-			flag2 = 2;
+			// flag2 = 2;
 			return false;
 		}
 		return false;
-	}
-
-	/**
-	 * 
-	 * 关闭连接
-	 */
-	public void closeConnection() {
-		if (connection != null) {
-			if (connection.isConnected())
-				connection.disconnect();
-			connection = null;
-		}
 	}
 
 	/**
@@ -225,19 +230,19 @@ public class XMPPChat {
 		collector.cancel();
 		if (result == null) {
 			Log.v("lixiaosong", "服务器无响应");
-			flag1 = 0;
+			// flag1 = 0;
 			return "0";
 		} else if (result.getType() == IQ.Type.RESULT) {
 			Log.v("lixiaosong", "注册成功");
-			flag1 = 1;
+			// flag1 = 1;
 			return "1";
 		} else if (result.getType() == IQ.Type.ERROR) {
 			if (result.getError().toString().equalsIgnoreCase("conflict(409)")) {
 				Log.v("lixiaosong", "该账号已被注册");
-				flag1 = 2;
+				// flag1 = 2;
 				return "2";
 			} else {
-				flag1 = 3;
+				// flag1 = 3;
 				Log.v("lixiaosong", "注册失败");
 				return "3";
 			}
@@ -564,16 +569,18 @@ public class XMPPChat {
 			sdm = new ServiceDiscoveryManager(connection);
 		sdm.addFeature("http://jabber.org/protocol/disco#info");
 		sdm.addFeature("jabber:iq:privacy");
+		// 为文件接收注册监听器
 		fileManager.addFileTransferListener(new FileTransferListener() {
 			@Override
 			public void fileTransferRequest(FileTransferRequest arg0) {
+				BufferedReader br = null;
 				final IncomingFileTransfer transfer = arg0.accept();
 				if (Environment.getExternalStorageState().equals(
 						Environment.MEDIA_MOUNTED)) {
 					File dir = new File(Environment
 							.getExternalStorageDirectory()
 							+ File.separator
-							+ "joocola_cache");
+							+ "xmpptest_cache");
 					if (!dir.exists())
 						dir.mkdir();
 					File file = new File(dir.getAbsolutePath()
@@ -581,12 +588,10 @@ public class XMPPChat {
 							+ (System.currentTimeMillis() * (int) (Math
 									.random() * 4 + 1)) + ".jpg");
 					try {
-						file.createNewFile();
+						// file.createNewFile();
 						transfer.recieveFile(file);
-						// InputStream iStream = transfer.recieveFile();
 						String line;
-						BufferedReader br = new BufferedReader(new FileReader(
-								file));
+						br = new BufferedReader(new FileReader(file));
 						while ((line = br.readLine()) != null)
 							System.out.println(line);
 						Log.v("lixiaosong",
@@ -594,11 +599,21 @@ public class XMPPChat {
 										+ arg0.getRequestor());
 						while (!transfer.isDone())
 							;
-
+						Intent intent = new Intent(
+								FileTransferDemo.TRANSFERFILE);
+						intent.putExtra("localurl", file.getAbsolutePath());
+						XMPPTestApp.getSelf().sendBroadcast(intent);
 					} catch (IOException e) {
 						e.printStackTrace();
 					} catch (XMPPException e) {
 						e.printStackTrace();
+					} finally {
+						if (br != null)
+							try {
+								br.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 					}
 				} else {
 
