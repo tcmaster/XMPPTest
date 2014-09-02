@@ -62,6 +62,7 @@ public class MultiChat {
 							+ "@conference."
 							+ XMPPChat.getInstance().getConnection()
 									.getServiceName());
+			muc.create(user);
 			Form form = muc.getConfigurationForm();
 			Form submitForm = form.createAnswerForm();
 			for (Iterator<FormField> fields = form.getFields(); fields
@@ -131,12 +132,9 @@ public class MultiChat {
 								+ "@conference."
 								+ XMPPChat.getInstance().getConnection()
 										.getServiceName());
-				// Form form = muc.getConfigurationForm();
-				// Form submitForm = form.createAnswerForm();
-				// // 设置聊天室是持久聊天室，即将要被保存下来
-				// submitForm.setAnswer("muc#roomconfig_persistentroom", true);
-				// // 发送已完成的表单（有默认值）到服务器来配置聊天室
-				// muc.sendConfigurationForm(submitForm);
+				/**
+				 * 备注，最新版本里现在有了createOrJoin方法，更便于我们使用
+				 */
 				// 添加相关监听器
 				muc.addMessageListener(new MultiChatListener(key));
 				chatMap.put(roomsName, muc);

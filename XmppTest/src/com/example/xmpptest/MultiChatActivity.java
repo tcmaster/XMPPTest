@@ -86,7 +86,7 @@ public class MultiChatActivity extends Activity {
 							talkToWho_et.getText().toString());
 			try {
 				chat.sendMessage(whatToTalk_et.getText().toString());
-				content_tv.setText("");
+				whatToTalk_et.setText("");
 			} catch (XMPPException e) {
 				e.printStackTrace();
 			}
@@ -100,5 +100,4 @@ public class MultiChatActivity extends Activity {
 		unregisterReceiver(receiver);
 		super.onDestroy();
 	}
-
 }

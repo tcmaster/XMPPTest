@@ -1,16 +1,33 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".FileTransferDemo" >
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/trans_ll"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:orientation="vertical" >
 
-</RelativeLayout>
+        <EditText
+            android:id="@+id/trans_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入要传送的用户" />
+
+        <EditText
+            android:id="@+id/trans_client_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入对方客户端的类型"
+            android:text="Spark 2.6.3" />
+
+        <Button
+            android:id="@+id/trans_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="传送" />
+    </LinearLayout>
+
+</ScrollView>

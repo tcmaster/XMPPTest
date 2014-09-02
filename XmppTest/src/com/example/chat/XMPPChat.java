@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -513,8 +512,8 @@ public class XMPPChat {
 	 * @throws InterruptedException
 	 */
 	public void sendFile(final String user, final File file,
-			final SendFileCallBack callBack) throws XMPPException,
-			InterruptedException {
+			final String client, final SendFileCallBack callBack)
+			throws XMPPException, InterruptedException {
 
 		new AsyncTask<Void, Void, FileTransfer.Status>() {
 			private OutgoingFileTransfer out;
@@ -522,7 +521,7 @@ public class XMPPChat {
 				String target = user
 						+ "@"
 						+ XMPPChat.getInstance().getConnection()
-								.getServiceName() + "/Smack";
+								.getServiceName() + "/" + client;
 				out = fileManager.createOutgoingFileTransfer(target);
 			}
 
@@ -584,7 +583,7 @@ public class XMPPChat {
 					try {
 						file.createNewFile();
 						transfer.recieveFile(file);
-						InputStream iStream = transfer.recieveFile();
+						// InputStream iStream = transfer.recieveFile();
 						String line;
 						BufferedReader br = new BufferedReader(new FileReader(
 								file));
