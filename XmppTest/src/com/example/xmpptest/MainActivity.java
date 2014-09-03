@@ -18,7 +18,7 @@ import com.lidroid.xutils.view.annotation.ViewInject;
 import com.lidroid.xutils.view.annotation.event.OnClick;
 
 /**
- * 欢迎来到xmpp的测试demo，这个是主注册，登录类
+ * 欢迎来到xmpp的测试demo，这个是注册，登录类
  * 
  * @author lixiaosong
  * 

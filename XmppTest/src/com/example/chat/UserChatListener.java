@@ -6,7 +6,6 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
 
 import android.content.Intent;
-import android.util.Log;
 
 import com.example.xmpptest.SingleChatActivity;
 import com.example.xmpptest.XMPPTestApp;
@@ -25,9 +24,9 @@ public class UserChatListener implements ChatManagerListener {
 
 			@Override
 			public void processMessage(Chat arg0, Message arg1) {
-				Log.v("lixiaosong", arg1.getFrom());
-				Log.v("lixiaosong", arg1.getTo());
-				Log.v("lixiaosong", arg1.getBody());
+				// Log.v("lixiaosong", arg1.getFrom());
+				// Log.v("lixiaosong", arg1.getTo());
+				// Log.v("lixiaosong", arg1.getBody());
 				// 将消息存入Builder中
 				String user = arg1.getFrom().split("@")[0];
 				StringBuilder builder = XMPPTestApp.getSelf().getSingleInfo(
